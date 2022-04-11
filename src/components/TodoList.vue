@@ -1,36 +1,58 @@
 <template>
-  <h2>To do: ({{ todoElements.length }})</h2>
-  <input
-    type="text"
-    placeholder="Type something and press ENTER"
-    v-model="inputValue"
-    @keyup.enter="addTodo()"
-  />
-  <ol>
-    <li v-for="(elem, i) in todoElements" :key="elem.uuid">
-      <label>
-        <input type="checkbox" v-model="elem.checked" />
-        <span>{{ elem.text }}</span>
-        <a href="#" class="remove" @click="removeTodo(i)">Remove</a>
-      </label>
-    </li>
-  </ol>
-  <hr />
-  <h2>Completed items: ({{ todoElementsCompleted.length }})</h2>
-  <ol>
-    <li v-for="(elem, i) in todoElementsCompleted" :key="elem.uuid">
-      <label>
-        <input type="checkbox" v-model="elem.checked" />
-        <span>{{ elem.text }}</span>
-        <a href="#" class="remove" @click="removeTodo(i)">Remove</a>
-      </label>
-    </li>
-  </ol>
+  <div>
+    <h2>To do: ({{ todoElements.length }})</h2>
+    <input
+      type="text"
+      placeholder="Type something and press ENTER"
+      v-model="inputValue"
+      @keyup.enter="addTodo()"
+    />
+    <draggable v-model="todoElements" tag="ol" item-key="uuid" group="todos">
+      <template #item="{ element, i }">
+        <li>
+          <label>
+            <input type="checkbox" v-model="element.checked" />
+            <span>{{ element.text }}</span>
+            <a href="#" class="remove" @click="removeTodo(i)">Remove</a>
+          </label>
+        </li>
+      </template>
+    </draggable>
+    <hr />
+    <h2>Completed items: ({{ todoElementsCompleted.length }})</h2>
+    <draggable
+      v-model="todoElementsCompleted"
+      tag="ol"
+      item-key="uuid"
+      group="todos"
+    >
+      <template #item="{ element, i }">
+        <li>
+          <label>
+            <input type="checkbox" v-model="element.checked" />
+            <span>{{ element.text }}</span>
+            <a href="#" class="remove" @click="removeTodo(i)">Remove</a>
+          </label>
+        </li>
+      </template>
+    </draggable>
+  </div>
 </template>
+
+<script lang="ts">
+import draggable from "vuedraggable";
+
+export default {
+  components: {
+    draggable,
+  },
+};
+</script>
 
 <script lang="ts" setup>
 import { v4 as uuid } from "uuid";
-import { computed, Ref, ref } from "vue";
+
+import { computed, ComputedRef, Ref, ref, WritableComputedRef } from "vue";
 
 interface TodoElement {
   text: string;
@@ -50,12 +72,22 @@ const todos: Ref<TodoElement[]> = ref(
   }))
 );
 
-const todoElements = computed(() =>
-  todos.value.filter(({ checked }) => !checked)
-);
-const todoElementsCompleted = computed(() =>
-  todos.value.filter(({ checked }) => checked)
-);
+const todoElements: WritableComputedRef<TodoElement[]> = computed({
+  get: () => todos.value.filter(({ checked }) => !checked),
+  set: (value) =>
+    (todos.value = [
+      ...value.map((elem) => ({ ...elem, checked: false })),
+      ...todoElementsCompleted.value,
+    ]),
+});
+const todoElementsCompleted: WritableComputedRef<TodoElement[]> = computed({
+  get: () => todos.value.filter(({ checked }) => checked),
+  set: (value) =>
+    (todos.value = [
+      ...todoElements.value,
+      ...value.map((elem) => ({ ...elem, checked: true })),
+    ]),
+});
 
 const inputValue: Ref<string> = ref("");
 
@@ -68,5 +100,3 @@ const removeTodo = (index: number) => {
   todos.value.splice(index, 1);
 };
 </script>
-
-<style scoped></style>
