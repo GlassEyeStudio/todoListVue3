@@ -1,27 +1,44 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+  <TodoList />
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-import HelloWorld from "./components/HelloWorld.vue";
-
-export default defineComponent({
-  name: "App",
-  components: {
-    HelloWorld,
-  },
-});
+<script lang="ts" setup>
+import TodoList from "./components/TodoList.vue";
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+body {
+  padding: 20px;
+  font-family: Helvetica;
+}
+
+li {
+  margin: 8px 0;
+}
+
+h2 {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+del {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+input[type="text"] {
+  padding: 10px;
+  width: 200px;
+}
+
+label .remove {
+  display: none;
+  color: red;
+}
+
+label:hover .remove {
+  display: inline-block;
+  margin-left: 10px;
+  color: red;
+  opacity: 0.5;
 }
 </style>
